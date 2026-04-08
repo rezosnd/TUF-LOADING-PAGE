@@ -328,7 +328,7 @@ saveNotes(noteKey, text)           // Persists notes to localStorage
 
 ### Notes Not Persisting
 - Ensure localStorage is not disabled
-- Check browser privacy settings
+- Check browser privacy Settings
 - Clear cache if previously cleared data
 
 ### Animation Performance on Mobile
@@ -337,66 +337,6 @@ saveNotes(noteKey, text)           // Persists notes to localStorage
 
 ---
 
-## 📝 Notes on Code Quality
-
-### Code Organization
-✅ **Clean Architecture**: Components are properly separated by concern
-✅ **No Comments Clutter**: Clean, readable code that speaks for itself
-✅ **Memory Efficient**: Uses React.memo, useMemo, useCallback for optimization
-✅ **No Console Logs**: Debug statements removed for production
-✅ **Minimal Dependencies**: Only essential packages included
-
-### Performance Optimizations
-✅ **Image Optimization**: 89.7% size reduction with AVIF conversion
-✅ **Code Splitting**: Dynamic imports for heavy components
-✅ **Lazy Loading**: Images use lazy loading with IntersectionObserver
-✅ **Memoization**: Expensive computations are memoized
-✅ **CSS Utilities**: TailwindCSS eliminates unused CSS
-
-### Accessibility Features
-✅ **Semantic HTML**: Proper heading hierarchy and semantic elements
-✅ **ARIA Labels**: Screen reader support where needed
-✅ **Keyboard Navigation**: Full keyboard support
-✅ **Color Contrast**: All text meets WCAG AA standards
-✅ **Touch Targets**: Mobile buttons are 44px+ for easy interaction
-
----
-
-## 📸 Screenshots
-
-### Desktop View
-- Full calendar with side-by-side layout
-- Large, readable date grid
-- Integrated notes panel
-- Prominent month imagery
-
-### Mobile View
-- Stacked vertical layout
-- Floating navigation controls
-- Touch-optimized date selection
-- Responsive typography
-
-### Features Showcase
-- Day range selection with highlighting
-- Notes auto-save indication
-- Smooth flip animations between months
-- Responsive adaptation to all screen sizes
-
----
-
-## 🎥 Video Demonstration
-
-A comprehensive video walkthrough demonstrating:
-- ✅ Interactive calendar navigation
-- ✅ Day range selection functionality
-- ✅ Notes feature with persistence
-- ✅ Responsive design (desktop to mobile)
-- ✅ Animation smoothness
-- ✅ Image loading and optimization
-
-*[Link to video to be added upon deployment]*
-
----
 
 ## 🌍 Live Demo
 
