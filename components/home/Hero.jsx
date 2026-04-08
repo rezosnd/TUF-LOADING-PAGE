@@ -530,8 +530,6 @@ export default function Hero() {
                           ? `Notes: ${range.start.getDate()} ${monthName}`
                           : `${monthName} Notes`;
 
-                      const rangeNoteText = selectedRangeInfo ? notes[selectedRangeInfo.key] || "" : "";
-
                       return (
                         <div className="space-y-2">
                           <MonthNotes
@@ -540,66 +538,6 @@ export default function Hero() {
                             value={notes[activeNoteKey] || ""}
                             onEdit={openEditor}
                           />
-
-                          <div className={`rounded-xl border backdrop-blur px-3 py-2 shadow-[0_10px_24px_rgba(29,161,242,0.08)] transition-colors ${selectedRangeInfo ? "border-[#1da1f2]/40 bg-linear-to-br from-[#f8fcff] via-[#edf8ff] to-[#e7f4ff]" : "border-[#1da1f2]/25 bg-linear-to-br from-white via-[#f7fbff] to-[#eef8ff]"}`}>
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="text-[9px] uppercase tracking-[0.3em] text-[#1da1f2]">Selected Range</p>
-                                {selectedRangeInfo ? (
-                                  <>
-                                    <p className="mt-0.5 text-[10px] md:text-xs font-semibold text-gray-900 truncate">
-                                      {selectedRangeInfo.label}
-                                    </p>
-                                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                                      <span className="rounded-full bg-[#1da1f2]/12 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#0f7fc0]">
-                                        Start {selectedRangeInfo.startLabel}
-                                      </span>
-                                      <span className="rounded-full bg-[#1da1f2]/12 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#0f7fc0]">
-                                        End {selectedRangeInfo.endLabel}
-                                      </span>
-                                      <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">
-                                        {selectedRangeInfo.days} days
-                                      </span>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <p className="text-[10px] md:text-xs italic text-gray-500">
-                                    Tap a start date and then an end date to lock a range.
-                                  </p>
-                                )}
-                              </div>
-
-                              <div className="flex flex-col items-end gap-2 shrink-0">
-                                <span className="rounded-full bg-[#1da1f2]/10 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-[#1da1f2]">
-                                  {selectedRangeInfo ? "Range ready" : "No range"}
-                                </span>
-                                <div className="flex gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={clearRange}
-                                    disabled={!range.start && !range.end}
-                                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-[10px] font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-                                  >
-                                    Clear
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={openRangeNoteEditor}
-                                    disabled={!selectedRangeInfo}
-                                    className="rounded-lg bg-[#1da1f2] px-3 py-1.5 text-[10px] font-semibold text-white transition hover:bg-[#1688cf] disabled:cursor-not-allowed disabled:bg-gray-300"
-                                  >
-                                    Add Range Note
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-
-                            {rangeNoteText ? (
-                              <p className="mt-2 rounded-lg border border-[#1da1f2]/10 bg-white/70 px-3 py-2 text-[10px] md:text-xs text-gray-700 line-clamp-2 whitespace-pre-wrap leading-[1.35rem] shadow-sm">
-                                {rangeNoteText}
-                              </p>
-                            ) : null}
-                          </div>
                         </div>
                       );
                     })()}
