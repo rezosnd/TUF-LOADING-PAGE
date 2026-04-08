@@ -143,9 +143,7 @@ This project is a **Frontend Engineering Challenge** focused on building a polis
 
 ```bash
 # Clone the repository
-git clone https://github.com/rezosnd/tuf-2026.git
-cd kiitfest-2026
-
+https://github.com/rezosnd/TUF-LOADING-PAGE/
 # Install dependencies
 npm install
 
