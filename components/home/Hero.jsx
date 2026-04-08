@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight, NotebookPen } from "lucide-react";
+import { ChevronLeft, ChevronRight, NotebookPen, X } from "lucide-react";
 
 const HTMLFlipBook = dynamic(() => import("react-pageflip"), { ssr: false });
 
@@ -26,146 +26,104 @@ const FlipPage = React.memo(
 );
 FlipPage.displayName = "FlipPage";
 
-const MonthNotes = memo(({ noteKey, label, onInteractionStart, onInteractionEnd }) => {
-  const [text, setText] = useState('');
-  const [isSaved, setIsSaved] = useState(false);
-  const saveTimeout = useRef(null);
-  const UI_TIMEOUT = useRef(null);
-  const textareaRef = useRef(null);
+const NotesModal = memo(({ title, initialValue, onClose, onSave }) => {
+  const [value, setValue] = useState(initialValue || "");
 
   useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-
-    const preventFlip = (e) => {
-      e.stopPropagation();
-    };
-
-    // Attach native event listeners to block react-pageflip from stealing focus
-    el.addEventListener("mousedown", preventFlip, { capture: true });
-    el.addEventListener("touchstart", preventFlip, { capture: true });
-    el.addEventListener("pointerdown", preventFlip, { capture: true });
-    
-    return () => {
-      el.removeEventListener("mousedown", preventFlip, { capture: true });
-      el.removeEventListener("touchstart", preventFlip, { capture: true });
-      el.removeEventListener("pointerdown", preventFlip, { capture: true });
-    };
-  }, []);
+    setValue(initialValue || "");
+  }, [initialValue]);
 
   useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('calendarNotes') || '{}');
-      setText(saved[noteKey] || '');
-    } catch(e) {}
-  }, [noteKey]);
+    const handleEscape = (event) => {
+      if (event.key === "Escape") onClose();
+    };
 
-  const handleChange = (e) => {
-    setText(e.target.value);
-    if (saveTimeout.current) clearTimeout(saveTimeout.current);
-    saveTimeout.current = setTimeout(() => {
-      try {
-         const saved = JSON.parse(localStorage.getItem('calendarNotes') || '{}');
-         saved[noteKey] = e.target.value;
-         localStorage.setItem('calendarNotes', JSON.stringify(saved));
-         setIsSaved(true);
-         if (UI_TIMEOUT.current) clearTimeout(UI_TIMEOUT.current);
-         UI_TIMEOUT.current = setTimeout(() => setIsSaved(false), 2000);
-      } catch(err) {}
-    }, 500);
-  };
-
-  const handleClear = () => {
-    setText('');
-    try {
-       const saved = JSON.parse(localStorage.getItem('calendarNotes') || '{}');
-       delete saved[noteKey];
-       localStorage.setItem('calendarNotes', JSON.stringify(saved));
-    } catch(err) {}
-  };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
 
   return (
-    <div className="mt-1 h-[28%] flex flex-col relative w-full border-t border-dashed border-gray-300 pt-1">
+    <div className="fixed inset-0 z-9999 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-xl rounded-2xl border-2 border-black bg-white shadow-[0_20px_60px_rgba(0,0,0,0.45)] overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-gray-50">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500">Edit Notes</p>
+            <h3 className="font-bebas text-3xl text-gray-900">{title}</h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-200 transition"
+            aria-label="Close notes editor"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-5">
+          <textarea
+            autoFocus
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            placeholder="Write your notes here..."
+            className="w-full min-h-56 resize-none rounded-xl border-2 border-gray-300 bg-white p-4 text-gray-900 outline-none focus:border-[#1da1f2] focus:ring-4 focus:ring-[#1da1f2]/15 text-base leading-7"
+          />
+          <div className="mt-4 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => onSave(value)}
+              className="px-5 py-2 rounded-lg bg-[#1da1f2] text-white hover:bg-[#1688cf] transition font-semibold"
+            >
+              Save Notes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const MonthNotes = memo(({ noteKey, label, value, onEdit }) => {
+  return (
+    <div className="mt-1 min-h-30 md:min-h-33 flex flex-col relative w-full border-t border-dashed border-gray-300 pt-1">
       <div className="flex justify-between items-end mb-0 md:mb-1 px-1 z-20">
         <div className="flex items-center gap-2">
           <span className="text-[9px] md:text-[10px] font-bold tracking-widest text-[#1da1f2] uppercase flex items-center gap-1">
-            <NotebookPen size={12}/> {label}
+            <NotebookPen size={12} /> {label}
           </span>
-<span
-  className={`text-[9px] md:text-[10px] font-medium tracking-wide transition-all duration-300 ${
-    isSaved
-      ? "opacity-100 text-[#1da1f2] translate-y-0 drop-shadow-[0_0_6px_rgba(29,161,242,0.6)]"
-      : "opacity-0 -translate-y-1"
-  }`}
->
-  saved ✓
-</span>
         </div>
-        {text.length > 0 && (
-          <button 
-            type="button"
-            onClick={handleClear} 
-            className="text-[9px] md:text-[10px] text-red-500 hover:text-red-700 font-bold z-30 uppercase tracking-widest active:scale-95 cursor-pointer transition-transform"
-          >
-            Clear
-          </button>
+        <button
+          type="button"
+          onClick={() => onEdit(noteKey, value)}
+          className="text-[9px] md:text-[10px] text-[#1da1f2] hover:text-[#1688cf] font-bold z-30 uppercase tracking-widest active:scale-95 cursor-pointer transition-transform"
+        >
+          Edit
+        </button>
+      </div>
+      <div className="w-full flex-1 min-h-22 rounded-md border border-gray-200 bg-gray-50 px-2 pt-1 overflow-y-auto">
+        {value ? (
+          <p className="text-[10px] md:text-xs text-gray-800 font-medium whitespace-pre-wrap leading-[1.4rem]">
+            {value}
+          </p>
+        ) : (
+          <p className="text-[10px] md:text-xs text-gray-400 italic leading-[1.4rem]">
+            Open Edit to add notes for this month.
+          </p>
         )}
       </div>
-      <textarea
-        ref={textareaRef}
-        placeholder="Write..."
-        className="w-full flex-1 resize-none bg-transparent outline-none text-[10px] md:text-xs text-gray-800 font-medium z-20 px-1 pt-[6px] pointer-events-auto select-text cursor-text"
-        value={text}
-        onChange={handleChange}
-        onFocus={onInteractionStart}
-        onBlur={onInteractionEnd}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          e.nativeEvent.stopPropagation();
-          e.target.focus();
-        }}
-        onPointerUp={(e) => e.stopPropagation()}
-        onPointerMove={(e) => e.stopPropagation()}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          e.nativeEvent.stopPropagation();
-          e.target.focus();
-        }}
-        onMouseUp={(e) => {
-          e.stopPropagation();
-          e.nativeEvent.stopPropagation();
-          e.target.focus();
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.nativeEvent.stopPropagation();
-          e.target.focus();
-        }}
-        onTouchStart={(e) => {
-          e.stopPropagation();
-          onInteractionStart?.();
-        }}
-        onTouchEnd={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
-        onKeyUp={(e) => e.stopPropagation()}
-        style={{
-          touchAction: 'pan-y',
-          lineHeight: "1.4rem",
-          backgroundImage: "linear-gradient(transparent, transparent calc(1.4rem - 1px), #e2e8f0 calc(1.4rem - 1px), #e2e8f0 1.4rem)",
-          backgroundSize: "100% 1.4rem",
-          userSelect: 'text',
-          WebkitUserSelect: 'text',
-          MsUserSelect: 'text'
-        }}
-      />
     </div>
   );
 });
 export default function Hero() {
   const [range, setRange] = useState({ start: null, end: null });
   const [notes, setNotes] = useState({});
-  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [editor, setEditor] = useState(null);
   const initialPageRef = useRef(new Date().getMonth());
   const [currentPage, setCurrentPage] = useState(initialPageRef.current);
   const bookRef = useRef();
@@ -212,6 +170,53 @@ export default function Hero() {
     } catch (error) {
     }
   }, [getFlipApi]);
+
+  const openEditor = useCallback((noteKey, value) => {
+    setEditor({ noteKey, value: value || "" });
+  }, []);
+
+  const closeEditor = useCallback(() => {
+    setEditor(null);
+  }, []);
+
+  const saveEditorNote = useCallback((noteKey, value) => {
+    setNotes((previous) => ({ ...previous, [noteKey]: value }));
+    setEditor(null);
+  }, []);
+
+  const formatShortDate = useCallback((date) => {
+    if (!date) return "";
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  }, []);
+
+  const selectedRangeInfo = useMemo(() => {
+    if (!range.start || !range.end) return null;
+
+    const key = `range-${range.start.toISOString().slice(0, 10)}_${range.end.toISOString().slice(0, 10)}`;
+    const days = Math.round((range.end.getTime() - range.start.getTime()) / 86400000) + 1;
+
+    return {
+      key,
+      days,
+      label: `${formatShortDate(range.start)} → ${formatShortDate(range.end)}`,
+    };
+  }, [formatShortDate, range.end, range.start]);
+
+  const clearRange = useCallback(() => {
+    setRange({ start: null, end: null });
+  }, []);
+
+  const openRangeNoteEditor = useCallback(() => {
+    if (!selectedRangeInfo) return;
+
+    setEditor({
+      noteKey: selectedRangeInfo.key,
+      value: notes[selectedRangeInfo.key] || "",
+    });
+  }, [notes, selectedRangeInfo]);
 
   useEffect(() => {
     setIsClient(true);
@@ -266,7 +271,7 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    const savedNotes = localStorage.getItem("calendarMemos");
+    const savedNotes = localStorage.getItem("calendarNotes");
     if (savedNotes) {
       try { setNotes(JSON.parse(savedNotes)); } catch(e) {}
     }
@@ -283,7 +288,7 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("calendarMemos", JSON.stringify(notes));
+    localStorage.setItem("calendarNotes", JSON.stringify(notes));
   }, [notes]);
 
   useEffect(() => {
@@ -365,7 +370,7 @@ export default function Hero() {
         <button
           type="button"
           onClick={goToPrevMonth}
-          className="absolute z-50 left-3 top-[12%] md:top-[20%] md:left-2 bg-[#1da1f2]/90 backdrop-blur hover:bg-white text-white hover:text-[#1da1f2] border-[1px] border-white/20 hover:border-[#1da1f2] p-2 md:p-1.5 lg:p-2 rounded-full shadow-[0_4px_25px_rgba(29,161,242,0.4)] transition-all flex items-center justify-center group pointer-events-auto active:scale-90 cursor-pointer" 
+          className="absolute z-50 left-3 top-[12%] md:top-[20%] md:left-2 bg-[#1da1f2]/90 backdrop-blur hover:bg-white text-white hover:text-[#1da1f2] border border-white/20 hover:border-[#1da1f2] p-2 md:p-1.5 lg:p-2 rounded-full shadow-[0_4px_25px_rgba(29,161,242,0.4)] transition-all flex items-center justify-center group pointer-events-auto active:scale-90 cursor-pointer" 
           aria-label="Previous Month">
           <ChevronLeft className="w-5 h-5 md:w-5 md:h-5 lg:w-6 lg:h-6 group-hover:-translate-x-1 transition-transform" strokeWidth={3} />
         </button>
@@ -373,21 +378,21 @@ export default function Hero() {
         <button
           type="button"
           onClick={goToNextMonth}
-          className="absolute z-50 right-3 top-[12%] md:top-[20%] md:right-2 bg-[#1da1f2]/90 backdrop-blur hover:bg-white text-white hover:text-[#1da1f2] border-[1px] border-white/20 hover:border-[#1da1f2] p-2 md:p-1.5 lg:p-2 rounded-full shadow-[0_4px_25px_rgba(29,161,242,0.4)] transition-all flex items-center justify-center group pointer-events-auto active:scale-90 cursor-pointer" 
+          className="absolute z-50 right-3 top-[12%] md:top-[20%] md:right-2 bg-[#1da1f2]/90 backdrop-blur hover:bg-white text-white hover:text-[#1da1f2] border border-white/20 hover:border-[#1da1f2] p-2 md:p-1.5 lg:p-2 rounded-full shadow-[0_4px_25px_rgba(29,161,242,0.4)] transition-all flex items-center justify-center group pointer-events-auto active:scale-90 cursor-pointer" 
           aria-label="Next Month">
           <ChevronRight className="w-5 h-5 md:w-5 md:h-5 lg:w-6 lg:h-6 group-hover:translate-x-1 transition-transform" strokeWidth={3} />
         </button>
 
         <div className="absolute -top-10 md:-top-14 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center pointer-events-none drop-shadow-md">
           <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-gray-300 shadow-inner border border-gray-400 z-10"></div>
-          <svg width="60" height="25" viewBox="0 0 80 35" className="-mt-1 opacity-80 md:w-[80px] md:h-[35px] md:-mt-1.5">
+          <svg width="60" height="25" viewBox="0 0 80 35" className="-mt-1 opacity-80 md:w-20 md:h-8.75 md:-mt-1.5">
             <path d="M 0 35 C 40 -10, 40 -10, 80 35" fill="none" stroke="#444" strokeWidth="2.5" />
           </svg>
         </div>
 
         <div className="absolute -top-3 left-0 w-full flex justify-center gap-1.5 md:gap-3 z-40 px-2 pointer-events-none">
           {[...Array(18)].map((_, i) => (
-            <div key={i} className="w-1.5 md:w-2 h-5 md:h-7 bg-gradient-to-b from-gray-200 via-gray-400 to-gray-600 rounded-full shadow-md border border-gray-500"></div>
+            <div key={i} className="w-1.5 md:w-2 h-5 md:h-7 bg-linear-to-b from-gray-200 via-gray-400 to-gray-600 rounded-full shadow-md border border-gray-500"></div>
           ))}
         </div>
 
@@ -436,9 +441,9 @@ export default function Hero() {
 
               return (
                 <FlipPage visualWidth={size.physicalW} visualHeight={size.physicalH} key={monthKey} className="flex flex-col h-full bg-[#fafafa] relative overflow-hidden rounded-b-md">
-                  <div className="pt-[14px]"></div>
+                  <div className="pt-3.5"></div>
                   
-                  <div className="h-[30%] md:h-[35%] w-full relative flex-shrink-0 rounded-t border-b-4 border-[#1da1f2] bg-gradient-to-br from-[#1da1f2]/20 to-[#1da1f2]/5 flex items-center justify-center overflow-hidden">
+                  <div className="h-[30%] md:h-[35%] w-full relative shrink-0 rounded-t border-b-4 border-[#1da1f2] bg-linear-to-br from-[#1da1f2]/20 to-[#1da1f2]/5 flex items-center justify-center overflow-hidden">
                     <img 
                       src={getMonthImageSrc(MONTH_NUMBERS[month])} 
                       alt={monthName}
@@ -449,6 +454,7 @@ export default function Hero() {
                         e.target.style.display = 'none';
                       }}
                     />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/10 to-transparent" />
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="text-[120px] md:text-[180px] font-bold text-[#1da1f2]/30 drop-shadow-lg">{MONTH_NUMBERS[month]}</div>
                     </div>
@@ -458,7 +464,7 @@ export default function Hero() {
                     </div>
                   </div>
 
-                  <div className="flex-1 p-[6px] md:p-3 flex flex-col justify-between text-xs md:text-sm">
+                  <div className="flex-1 p-1.5 md:p-3 flex flex-col justify-between text-xs md:text-sm">
                     <div className="w-full flex-1 flex flex-col">
                       <div className="grid grid-cols-7 mb-1 md:mb-2 border-b border-gray-200 pb-1 md:pb-2">
                           {WEEKDAYS.map((day, idx) => (
@@ -468,7 +474,7 @@ export default function Hero() {
                           ))}
                       </div>
 
-                      <div className="grid grid-cols-7 gap-[2px] flex-1 mt-1 md:mt-2">
+                      <div className="grid grid-cols-7 gap-0.5 flex-1 mt-1 md:mt-2">
                           {days.map((d, index) => {
                           const t = d.date.getTime();
                           const s = range.start?.getTime();
@@ -498,11 +504,11 @@ export default function Hero() {
                           const hasEvent = d.isCurrentMonth && (d.day % 12 === 0 || d.day === 15);
 
                           return (
-                              <div key={index} onClick={() => handleDateClick(d.date)} className={`relative flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 py-[2px] ${bgClass}`}>
-                                  <span className={`w-5 h-5 md:w-7 md:h-7 flex flex-col items-center justify-center text-[10px] md:text-xs z-10 ${inRange && !isStart && !isEnd ? "text-[#1da1f2] font-bold" : baseColor}`}>
+                              <div key={index} onClick={() => handleDateClick(d.date)} className={`group relative flex flex-col items-center justify-center cursor-pointer transition-colors duration-150 hover:bg-gray-100 py-0.5 ${bgClass}`}>
+                                <span className={`w-5 h-5 md:w-7 md:h-7 flex flex-col items-center justify-center rounded-full text-[10px] md:text-xs z-10 transition-all duration-150 ${inRange && !isStart && !isEnd ? "text-[#1da1f2] font-bold bg-transparent" : baseColor} ${isStart || isEnd || isSelectedOnly ? "shadow-[0_6px_16px_rgba(29,161,242,0.35)] ring-2 ring-white" : ""}`}>
                                       {d.day}
                                       {hasEvent && !isToday && !isStart && !isEnd && !inRange && (
-                                          <div className="absolute bottom-[0px] w-1 h-1 md:w-1.5 md:h-1.5 bg-[#1da1f2] rounded-full"></div>
+                                          <div className="absolute bottom-0 w-1 h-1 md:w-1.5 md:h-1.5 bg-[#1da1f2] rounded-full"></div>
                                       )}
                                   </span>
                               </div>
@@ -514,21 +520,80 @@ export default function Hero() {
                     {/* Integrated Notes Area */}
                     {(() => {
                       const isDateSelectedInThisMonth = range.start && range.start.getFullYear() === currentYear && range.start.getMonth() === month;
-                      const activeNoteKey = isDateSelectedInThisMonth 
-                          ? `${currentYear}-${month}-${range.start.getDate()}` 
+                      const activeNoteKey = isDateSelectedInThisMonth
+                          ? `${currentYear}-${month}-${range.start.getDate()}`
                           : monthKey;
-                      
+
                       const noteLabel = isDateSelectedInThisMonth
                           ? `Notes: ${range.start.getDate()} ${monthName}`
                           : `${monthName} Notes`;
-                        
+
+                      const rangeNoteText = selectedRangeInfo ? notes[selectedRangeInfo.key] || "" : "";
+
                       return (
-                        <MonthNotes
-                          noteKey={activeNoteKey}
-                          label={noteLabel}
-                          onInteractionStart={() => setIsEditingNotes(true)}
-                          onInteractionEnd={() => setIsEditingNotes(false)}
-                        />
+                        <div className="space-y-2">
+                          <MonthNotes
+                            noteKey={activeNoteKey}
+                            label={noteLabel}
+                            value={notes[activeNoteKey] || ""}
+                            onEdit={openEditor}
+                          />
+
+                          <div className="rounded-xl border border-[#1da1f2]/25 bg-linear-to-br from-white via-[#f7fbff] to-[#eef8ff] backdrop-blur px-3 py-2 shadow-[0_10px_24px_rgba(29,161,242,0.08)]">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="text-[9px] uppercase tracking-[0.3em] text-[#1da1f2]">Selected Range</p>
+                                {selectedRangeInfo ? (
+                                  <>
+                                    <p className="mt-0.5 text-[10px] md:text-xs font-semibold text-gray-900 truncate">
+                                      {selectedRangeInfo.label}
+                                    </p>
+                                    <div className="mt-1 flex items-center gap-2">
+                                      <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">
+                                        {selectedRangeInfo.days} days
+                                      </span>
+                                      <span className="h-1 w-10 rounded-full bg-linear-to-r from-[#1da1f2] via-[#7ecbff] to-[#d7efff]" />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <p className="text-[10px] md:text-xs italic text-gray-500">
+                                    Tap a start date and then an end date to lock a range.
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="flex flex-col items-end gap-2 shrink-0">
+                                <span className="rounded-full bg-[#1da1f2]/10 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-[#1da1f2]">
+                                  {selectedRangeInfo ? "Range ready" : "No range"}
+                                </span>
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={clearRange}
+                                    disabled={!range.start && !range.end}
+                                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-[10px] font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    Clear
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={openRangeNoteEditor}
+                                    disabled={!selectedRangeInfo}
+                                    className="rounded-lg bg-[#1da1f2] px-3 py-1.5 text-[10px] font-semibold text-white transition hover:bg-[#1688cf] disabled:cursor-not-allowed disabled:bg-gray-300"
+                                  >
+                                    Add Range Note
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {rangeNoteText ? (
+                              <p className="mt-2 rounded-lg border border-[#1da1f2]/10 bg-white/70 px-3 py-2 text-[10px] md:text-xs text-gray-700 line-clamp-2 whitespace-pre-wrap leading-[1.35rem] shadow-sm">
+                                {rangeNoteText}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
                       );
                     })()}
                   </div>
@@ -540,6 +605,15 @@ export default function Hero() {
         </div>
       </div>
       <div id="hero-scroll-down-text" className="absolute bottom-4 left-1/2 -translate-x-1/2 w-1 h-1 pointer-events-none opacity-0" />
+
+      {editor ? (
+        <NotesModal
+          title={editor.noteKey}
+          initialValue={editor.value}
+          onClose={closeEditor}
+          onSave={(value) => saveEditorNote(editor.noteKey, value)}
+        />
+      ) : null}
     </section>
   );
 };

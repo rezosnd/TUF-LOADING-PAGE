@@ -70,7 +70,7 @@ export default function App() {
           <Manifesto />
           <GamePlan />
 
-          <div className="overflow-hidden relative z-20 mt-16 text-[var(--tuf-pink)] font-marker">
+          <div className="overflow-hidden relative z-20 mt-16 text-(--tuf-pink) font-marker">
             <VelocityScroll defaultVelocity={2} />
           </div>
 
