@@ -97,18 +97,34 @@ const MonthNotes = memo(({ noteKey, label, onInteractionStart, onInteractionEnd 
         onChange={handleChange}
         onFocus={onInteractionStart}
         onBlur={onInteractionEnd}
-        onPointerDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent.stopPropagation();
+          e.target.focus();
+        }}
         onPointerUp={(e) => e.stopPropagation()}
         onPointerMove={(e) => e.stopPropagation()}
-        onMouseDown={(e) => e.stopPropagation()}
-        onMouseUp={(e) => e.stopPropagation()}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.nativeEvent.stopPropagation();
+          e.target.focus();
+        }}
+        onMouseUp={(e) => {
+          e.stopPropagation();
+          e.nativeEvent.stopPropagation();
+          e.target.focus();
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.nativeEvent.stopPropagation();
+          e.target.focus();
+        }}
         onTouchStart={(e) => {
           e.stopPropagation();
           onInteractionStart?.();
         }}
         onTouchEnd={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
         onKeyUp={(e) => e.stopPropagation()}
         style={{
@@ -369,6 +385,7 @@ export default function Hero() {
             showCover={false}
             usePortrait={true}
             useMouseEvents={false}
+              clickEventForward={true}
             mobileScrollSupport={isMobileViewport}
             swipeDistance={9999}
             disableFlipByClick={true}

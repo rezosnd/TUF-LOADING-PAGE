@@ -53,19 +53,10 @@ export const metadata = {
   referrer: "origin-when-cross-origin",
   keywords: [
     "TUF",
-    "Tech fest",
-    "Cultural fest",
-    "Events",
-    "Workshops",
-    "Competitions",
-    "Music",
-    "Dance",
-    "Innovation",
-    "2026",
     "Take You Forward",
   ],
   authors: [{ name: "TUF Team", url: "https://tuf.org/teams" }],
-  creator: "TUF Organizing Committee",
+  creator: "TUF INTERN",
   publisher: "TUF",
   icons: {
     icon: [
@@ -80,27 +71,19 @@ export const metadata = {
     },
   },
   openGraph: {
-    title: "TUF 2026 | Ultimate Cultural & Tech Experience",
+    title: "TUF 2026 | FRONTEND CHALLENGE",
     description:
-      "Take You Forward - Experience TUF 2026, the ultimate cultural and tech festival. Join thousands of innovators, creators, and dreamers.",
+      "Take You Forward - FRONTEND CHALLENGE.",
     url: "https://tuf.org",
     siteName: "TUF 2026",
-    images: [
-      {
-        url: "/og.jpg",
-        width: 1200,
-        height: 630,
-        alt: "TUF 2026 OG Image",
-      },
-    ],
     locale: "en_IN",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TUF 2026 | Ultimate Cultural & Tech Experience",
+    title: "TUF 2026 | FRONTEND CHALLENGE",
     description:
-      "Take You Forward - Experience TUF 2026, the ultimate cultural and tech festival. Join thousands of innovators, creators, and dreamers.",
+      "Take You Forward - FRONTEND CHALLENGE.",
     creator: "@takeyouforward",
     images: ["/og.jpg"],
   },
