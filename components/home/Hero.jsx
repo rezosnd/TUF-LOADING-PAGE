@@ -31,6 +31,27 @@ const MonthNotes = memo(({ noteKey, label, onInteractionStart, onInteractionEnd 
   const [isSaved, setIsSaved] = useState(false);
   const saveTimeout = useRef(null);
   const UI_TIMEOUT = useRef(null);
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    const preventFlip = (e) => {
+      e.stopPropagation();
+    };
+
+    // Attach native event listeners to block react-pageflip from stealing focus
+    el.addEventListener("mousedown", preventFlip, { capture: true });
+    el.addEventListener("touchstart", preventFlip, { capture: true });
+    el.addEventListener("pointerdown", preventFlip, { capture: true });
+    
+    return () => {
+      el.removeEventListener("mousedown", preventFlip, { capture: true });
+      el.removeEventListener("touchstart", preventFlip, { capture: true });
+      el.removeEventListener("pointerdown", preventFlip, { capture: true });
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -91,8 +112,9 @@ const MonthNotes = memo(({ noteKey, label, onInteractionStart, onInteractionEnd 
         )}
       </div>
       <textarea
+        ref={textareaRef}
         placeholder="Write..."
-        className="w-full flex-1 resize-none bg-transparent outline-none text-[10px] md:text-xs text-gray-800 font-medium z-20 px-1 pt-[6px] pointer-events-auto select-text"
+        className="w-full flex-1 resize-none bg-transparent outline-none text-[10px] md:text-xs text-gray-800 font-medium z-20 px-1 pt-[6px] pointer-events-auto select-text cursor-text"
         value={text}
         onChange={handleChange}
         onFocus={onInteractionStart}
